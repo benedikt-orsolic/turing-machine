@@ -7,11 +7,12 @@ import java.util.Iterator;
 import javax.swing.*;
 
 @SuppressWarnings("serial")
-/* TODO:    Show link lines ass they are being drawn.
- *          Add dot and arrow to link lines. 
+/* TODO:    Add dot and arrow to link lines. 
  *          Add error check to link definition/text field.
  *          Update machine line/text on top with each iteration
  *          Change color of MachineState and Link which are being executed.
+ *          Add a label to display machineLine, and some other prompt for setting
+ *              initial state.
  *          
  *          Add files support. Probably use xml.
  *          Add start/stop button.
@@ -24,7 +25,10 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	public void init() {
+		
 		setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
+		
+		
 		add_button = new JButton("Add State.");
 		add(add_button, SOUTH);
 		
@@ -37,7 +41,6 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		machineLineField = new JTextField("----------", 80);
 		machineLineField.addActionListener(this);
 		add( machineLineField, NORTH);
-		
 		machineString = "----------";
 		
 		
@@ -61,6 +64,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	public void run() {
+		/* Nothing to do. */
 	}
 	
 	
@@ -74,47 +78,18 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	public void mouseClicked(MouseEvent e){
+		/* I have no clue what it does. 
+		 * Maybe: when button pressed move machine state on screen and when
+		 * mouse clicked then just leave it there. */
 		if( add_state_f ){
 			add_state_f = false;
 			add_state = null;
 		}
 		
-		if( add_link_f ) {
-			/* TODO get to here from JTextFrame, add lines, do a life time of debugging*/
-			GObject target = getElementAt(e.getX(), e.getY());
-			MachineState current_state = null;
-			/*	TODO ERROR Throws scri exception	*/
-			add_stateLink.addPoint( new GPoint(e.getX(), e.getY()) );
-			
-			if( target != null ) {
-			
-				/* TODO get id of first state then let user draw lines and get id of second state
-				 * add start id and end id in machine state link, add a squer at end point as arow
-				 * */
-				/*	Target is MachineState.	*/
-				Iterator<MachineState> it = machineStateList.iterator();
-				while( it.hasNext() ) {
-					current_state = it.next();
-					if( current_state.getGCompound().equals(target) ) {
-						if( add_link_start_point_f ) {
-							add_stateLink.setStartID(current_state.getID());
-							add_link_start_point_f = false;
-						} else {
-							add_stateLink.setEndID(current_state.getID());
-							add_link_start_point_f = true;
-							add_link_f = false;
-							machineStateLinkList.add(add_stateLink);
-							add_stateLink = null;
-							
-						}
-					}
-				}
-			}
-			
-			
-		}
 		
-		drawLines();
+		if( add_link != null ) {
+			addLink( e.getX(), e.getY() );
+		}
 	}
 	
 	
@@ -126,33 +101,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
-	private void drawLines() {
-		Iterator<MachineLink> it = machineStateLinkList.iterator();
-		
-		while( it.hasNext() ) {
-			MachineLink current_stateLink = it.next();
-			Iterator<GPoint> points_it = current_stateLink.getPoints();
-			GPoint current = null;
-			double sX, sY, eX, eY;
-			if( points_it.hasNext() ) current = points_it.next();
-			
-			Boolean secondPoint_f = true; /*	At second point add GLable to mark connection.	*/
-			while( points_it.hasNext() ) {
-				
-				sX = current.getX();
-				sY = current.getY();
-				current = points_it.next();
-				eX = current.getX();
-				eY = current.getY();
-				if( secondPoint_f ) {
-					add(new GLabel( current_stateLink.getCmd()), eX, eY);
-					secondPoint_f = false;
-				}
-				add(new GLine(sX, sY, eX, eY));
-			}
-		}
-		
-	}
+	
 	
 	
 	
@@ -164,8 +113,22 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 
 	public void mouseMoved(MouseEvent e) {
+		
+		/* Machine state follows the mouse movement. */
 		if( add_state_f ) {
-			add_state.getGCompound().setLocation(e.getX(), e.getY());
+			add_state.getGCompound().setLocation(e.getX() - 
+					       add_state.getGCompound().getWidth()/2, 
+					       e.getY() - add_state.getGCompound().getHeight()/2);
+		}
+		
+		/* Last link line follows the mouse. */
+		if( add_link != null ) {
+			GLine line = add_link.getLastLine();
+			// Only sets label to second place where mouse clicked.
+			add_link.moveLabel();
+			if( line != null ) {
+				line.setEndPoint(e.getX(), e.getY());
+			}
 		}
 	}
 	
@@ -180,10 +143,12 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	public void actionPerformed(ActionEvent e) {
 		
-		if( running ) return;
+		/* Disable buttons and text fields while machine is running.
+		 * So user doesn't add extra states in mean time. */
+		//if( running ) return;
 		
+		/*	Initializes new MachineState object that is to be added on screen.	*/
 		if( add_button == e.getSource() && !add_state_f ) {
-			/*	Initializes new MachineState object that is to be added on screen.	*/
 			add_state_f = true;
 			add_state = new MachineState();
 			exit_stateID = add_state.getID();
@@ -191,17 +156,151 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 			machineStateList.add(add_state);
 		}
 		
-		if( add_machineStateLink_JTF == e.getSource() && !add_link_f ) {
-			add_link_f = true;
-			add_stateLink = new MachineLink( add_machineStateLink_JTF.getText() );
+		/*	Initializes new MachineLink object that is to be added on screen.	*/
+		if( add_machineStateLink_JTF == e.getSource() && add_link == null ) {
+			add_link = new MachineLink( add_machineStateLink_JTF.getText() );
 		}
 		
+		/* Starts executing program drawn on screen. */
 		if( machineLineField == e.getSource() ) {
 			running = true;
 			machineString = machineLineField.getText();
 			runProgram();
 		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: Drawing functions
+	 * 
+	 * Description: Set of functions used to handle drawing on screen.
+	 *              
+	 * 
+	 **************************************************************************/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/* Function uses x and y as coordinates where is the mouse. 
+	 * Adds link from user clicked on MachinState until user clicks on 
+	 * object representing machine state again. */
+	private void addLink(double x, double y) {
+
+		
+		if( add_link.getStartID() != -1 ){
+			add( add_link.addPoint( x, y ) );
+		}
+		
+		if( add_link != null && add_link.getLabel() != null ) {
+			add( add_link.getLabel() ); 
+		}
+		
+		// Adds end points only if on MachinState
+		addEndPoints(x, y);
+	}
+	
+	
+	
+	/* Receives x, y, coordinates where mouse was clicked.
+	 * If any MachinState contains those it's end point. */
+	private void addEndPoints(double x, double y) {
+		
+		Iterator<MachineState> it = machineStateList.iterator();
+		MachineState state = null;
+		
+		while( it.hasNext() ) {
+			state = it.next();
+			if( state.getGCompound().contains(x,y) ) {
+				if( add_link.getStartID() == -1 ) {
+					add( add_link.setStart(state.getID(), x, y));
+				} else {
+					add_link.setEndID(state.getID());
+					machineStateLinkList.add(add_link);
+					add_link = null;
+					
+				}
+			}
+		}
+	}
+	
+	
+	
+//	private void drawLines() {
+//		Iterator<MachineLink> it = machineStateLinkList.iterator();
+//		while(it.hasNext()) {
+//			
+//			MachineLink link = it.next();
+//			Iterator<GLine> lines = link.getLines();
+//			if( lines.hasNext() ) {
+//				GLine line = lines.next();
+//				add(line);
+//				add(new GLabel(link.getCmd()), line.getEndPoint());
+//			}
+//			while( lines.hasNext() ) {
+//				add( lines.next() );
+//			}
+//		}
+////		Iterator<MachineLink> it = machineStateLinkList.iterator();
+////		
+////		while( it.hasNext() ) {
+////			MachineLink current_stateLink = it.next();
+////			Iterator<GPoint> points_it = current_stateLink.getPoints();
+////			GPoint current = null;
+////			double sX, sY, eX, eY;
+////			if( points_it.hasNext() ) current = points_it.next();
+////			
+////			Boolean secondPoint_f = true; /*	At second point add GLable to mark connection.	*/
+////			while( points_it.hasNext() ) {
+////				
+////				sX = current.getX();
+////				sY = current.getY();
+////				current = points_it.next();
+////				eX = current.getX();
+////				eY = current.getY();
+////				if( secondPoint_f ) {
+////					add(new GLabel( current_stateLink.getCmd()), eX, eY);
+////					secondPoint_f = false;
+////				}
+////				add(new GLine(sX, sY, eX, eY));
+////			}
+////		}
+//		
+//	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: End Drawing functions
+	 * 
+	 **************************************************************************/
 	
 	
 	
@@ -258,6 +357,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 //			           machineString.substring(index+1, machineString.length()));
 			//System.out.println(machineString);
 			machineLineField.setText(machineString);
+			System.out.println(machineString);
 			pause(500);
 		}
 		
@@ -311,11 +411,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	}
 	/***************************************************************************
 	 * 
-	 * Section: Run Machine
-	 * 
-	 * Description: Based on lists of machine states and machine state links
-	 *              runProgram and sub functions change machine state String
-	 *              and update text field where initial string was entered.
+	 * Section: End Run Machine
 	 * 
 	 **************************************************************************/
 	
@@ -349,9 +445,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	/* Defines text field for MachineLink and list of them.	*/
 	JTextField add_machineStateLink_JTF;
-	Boolean add_link_f = false;
-	Boolean add_link_start_point_f = true;
-	MachineLink add_stateLink;
+	MachineLink add_link;
 	ArrayList<MachineLink> machineStateLinkList;
 	
 	/* User enters starting characters on the line.

@@ -7,4 +7,6 @@ public interface ProjectConstants {
 	
 	public static final int MACHINE_STATE_RADIUS = 30;
 	
+	public static final int LINK_JOINT_RADIUS = 5;
+	
 }

@@ -8,11 +8,20 @@ import javax.swing.*;
 
 @SuppressWarnings("serial")
 /* TODO:    Add dot and arrow to link lines. 
- *          Add error check to link definition/text field.
- *          Update machine line/text on top with each iteration
+ *          Add error check to link definition/text/cmd field.
  *          Change color of MachineState and Link which are being executed.
- *          Add a label to display machineLine, and some other prompt for setting
+ *          Allow for start point to be else where, not only on index 0
+ *          Allow time interval change in runProgram
+ *          Allow skip to end.
+ *          
+ *          
+ *          
+ *          
+ *          No clue what??
+ *              Add a label to display machineLine, and some other prompt for setting
  *              initial state.
+ *          
+ *          
  *          
  *          Add files support. Probably use xml.
  *          Add start/stop button.
@@ -23,25 +32,32 @@ import javax.swing.*;
  *          */
 public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
-	
+	public static void main(String[] args) {
+		new TuringMachine().start();
+	}
 	public void init() {
 		
 		setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
 		
 		
 		add_button = new JButton("Add State.");
-		add(add_button, SOUTH);
-		
+		removeAll = new JButton("Remove all");
 		
 		add_machineStateLink_JTF = new JTextField("Add connection", 10);
 		add_machineStateLink_JTF.addActionListener(this);
-		add(add_machineStateLink_JTF, SOUTH);
 		
 		
 		machineLineField = new JTextField("----------", 80);
 		machineLineField.addActionListener(this);
-		add( machineLineField, NORTH);
 		machineString = "----------";
+
+		
+		
+		add( machineLineField, NORTH);
+
+		add(add_button, SOUTH);
+		add(removeAll, SOUTH);
+		add(add_machineStateLink_JTF, SOUTH);
 		
 		
 		
@@ -145,7 +161,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		
 		/* Disable buttons and text fields while machine is running.
 		 * So user doesn't add extra states in mean time. */
-		//if( running ) return;
+		if( running ) return;
 		
 		/*	Initializes new MachineState object that is to be added on screen.	*/
 		if( add_button == e.getSource() && !add_state_f ) {
@@ -165,7 +181,29 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		if( machineLineField == e.getSource() ) {
 			running = true;
 			machineString = machineLineField.getText();
-			runProgram();
+			new Thread(() -> {
+			    runProgram();
+			}).start();
+		}
+		
+		/* Remove all objects from screen. */
+		if( removeAll == e.getSource() ) {
+			Iterator<MachineState> it = machineStateList.iterator();
+			while(it.hasNext()) {
+				remove( it.next().getGCompound() );
+			}
+			
+			Iterator<MachineLink> link_it = machineStateLinkList.iterator();
+			while(link_it.hasNext()){
+				MachineLink link = link_it.next();
+				Iterator<GLine> lines = link.getLines();
+				while(lines.hasNext()) {
+					remove(lines.next());
+				}
+				remove(link.getLabel());
+			}
+			
+			start_stateID = exit_stateID + 1;
 		}
 	}
 	
@@ -231,10 +269,20 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		while( it.hasNext() ) {
 			state = it.next();
 			if( state.getGCompound().contains(x,y) ) {
-				if( add_link.getStartID() == -1 ) {
+//				// TODO should set line on MACHINE_STATE_RADIUS from
+//				// machine state center point.
+//				double dX = x - (state.getGCompound().getX() + MACHINE_STATE_RADIUS);
+//				double dY = y - (state.getGCompound().getY() + MACHINE_STATE_RADIUS);
+//				double r = Math.sqrt(dX*dX + dY*dY);
+//				
+//				x = (MACHINE_STATE_RADIUS/r * dX) + (state.getGCompound().getX() + MACHINE_STATE_RADIUS);
+//				//y = (MACHINE_STATE_RADIUS/r * dY) + (state.getGCompound().getY() + MACHINE_STATE_RADIUS);
+//				y = Math.sqrt(MACHINE_STATE_RADIUS*MACHINE_STATE_RADIUS - dX*dX)+ (state.getGCompound().getX() + MACHINE_STATE_RADIUS);
+				if( add_link != null && add_link.getStartID() == -1 ) {
 					add( add_link.setStart(state.getID(), x, y));
 				} else {
 					add_link.setEndID(state.getID());
+					//add_link.getLastLine().setEndPoint(x, y);
 					machineStateLinkList.add(add_link);
 					add_link = null;
 					
@@ -334,12 +382,10 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		
 		/* Tracks what is current state
 		 * That is starting ID of link to be executed. */
-		int current_ID = 0;
+		int current_ID = start_stateID;
 		/* Index where machine is currently looking on machine line. */
 		int index = 0;
 		MachineLink link = null;
-		
-		
 		
 		while( current_ID != exit_stateID ) {
 			
@@ -357,8 +403,10 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 //			           machineString.substring(index+1, machineString.length()));
 			//System.out.println(machineString);
 			machineLineField.setText(machineString);
+			machineLineField.validate();
+			
 			System.out.println(machineString);
-			pause(500);
+			pause(delay);
 		}
 		
 		
@@ -435,6 +483,8 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	/*	When machine reaches state with this ID it stops running.	*/
 	int exit_stateID = 0;
+	int start_stateID = 0;
+	int delay = 1000; // Pause between switching states.
 
 	/* Defines "Add state" button and list of MachineState
 	 * True until user clicks and places machine state. */
@@ -453,4 +503,7 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	JTextField machineLineField;
 	Boolean running = false;
 	String machineString;
+	
+	JButton removeAll;
+	
 }

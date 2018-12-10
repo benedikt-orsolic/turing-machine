@@ -6,11 +6,8 @@ import acm.graphics.*;
 public class MachineLink implements ProjectConstants{
 	
 	public MachineLink(String cmd){
-		points = new ArrayList<GPoint>();
 		lines = new ArrayList<GLine>();
 		label = new GLabel(cmd);
-		lastPoint = null;
-		lastLine = null;
 		command = cmd;
 		startID = -1;
 		endID = -1;
@@ -23,15 +20,17 @@ public class MachineLink implements ProjectConstants{
 	}
 	
 	public GLine addPoint(double x, double y) {
-		double lastX = lastLine.getEndPoint().getX();
-		double lastY = lastLine.getEndPoint().getY();
-		lastLine = new GLine( lastX, lastY, x, y);
+		double lastX = lines.get( lines.size()-1 ).getEndPoint().getX();
+		double lastY = lines.get( lines.size()-1 ).getEndPoint().getY();
+		lines.add(new GLine( lastX, lastY, x, y) );
+		
 		if( !labelSet ) {
 			label.setLocation(x, y);
 			labelSet = true;
 		}
-		
-		return lastLine;
+
+		if( lines.size() == 0 ) return null;
+		return lines.get( lines.size()-1 );
 	}
 	
 	public GLabel getLabel() {
@@ -43,11 +42,9 @@ public class MachineLink implements ProjectConstants{
 	}
 	
 	public GLine getLastLine(){
-		return lastLine;
-	}
-	
-	public Iterator<GPoint> getPoints() {
-		return points.iterator();
+
+		if( lines.size() == 0 ) return null;
+		return lines.get( lines.size()-1 );
 	}
 	
 	public String getCmd() {
@@ -56,9 +53,10 @@ public class MachineLink implements ProjectConstants{
 	
 	public GLine setStart(int ID, double x, double y) {
 		startID = ID;
-		lastLine = new GLine(x, y, x, y);
-		lines.add( lastLine );
-		return lastLine;
+		lines.add( new GLine(x, y, x, y) );
+		
+		if( lines.size() == 0 ) return null;
+		return lines.get( lines.size()-1 );
 	}
 	
 	public void setEndID(int ID) {
@@ -82,10 +80,7 @@ public class MachineLink implements ProjectConstants{
 	
 	/* List of GPoint objects that make connection. 
 	 * First and last one need to bin in MachineState.	*/
-	ArrayList<GPoint> points;
 	ArrayList<GLine> lines;
-	GPoint lastPoint;
-	GLine lastLine;
 	String command;
 	Boolean fristPointAdded_f;
 	GLabel label;

@@ -1,5 +1,7 @@
 import acm.graphics.*;
 import acm.program.*;
+
+import java.awt.Color;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,22 +44,33 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		
 		add_button = new JButton("Add State.");
 		removeAll = new JButton("Remove all");
+		start_button = new JButton("Start");
 		
 		add_machineStateLink_JTF = new JTextField("Add connection", 10);
 		add_machineStateLink_JTF.addActionListener(this);
 		
 		
-		machineLineField = new JTextField("----------", 80);
-		machineLineField.addActionListener(this);
+		//machineLineField = new JTextField("----------", 80);
+		//machineLineField.addActionListener(this);
 		machineString = "----------";
 
 		
 		
-		add( machineLineField, NORTH);
+		//add( machineLineField, NORTH);
 
 		add(add_button, SOUTH);
 		add(removeAll, SOUTH);
 		add(add_machineStateLink_JTF, SOUTH);
+		add( start_button, SOUTH );
+		
+
+		machineLineLeft = new JTextField("", 40);
+		machineLineLeft.setHorizontalAlignment(SwingConstants.RIGHT);
+		machineLineCurrent = new JTextField("", 1);
+		machineLineRight = new JTextField("", 40);
+		add( machineLineLeft, NORTH);
+		add( machineLineCurrent, NORTH);
+		add( machineLineRight, NORTH);
 		
 		
 		
@@ -178,11 +191,16 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		}
 		
 		/* Starts executing program drawn on screen. */
-		if( machineLineField == e.getSource() ) {
+		if( start_button == e.getSource() ) {
 			running = true;
-			machineString = machineLineField.getText();
+			
+			
+			machineString = machineLineLeft.getText() + 
+					        machineLineCurrent.getText() +
+					        machineLineRight.getText();
+			
 			new Thread(() -> {
-			    runProgram();
+			    runProgram( machineLineLeft.getText().length() );
 			}).start();
 		}
 		
@@ -378,13 +396,14 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	 *              and update text field where initial string was entered.
 	 * 
 	 **************************************************************************/
-	private void runProgram() {
+	
+
+	/* Index where machine is currently looking on machine line. */
+	private void runProgram( int index) {
 		
 		/* Tracks what is current state
 		 * That is starting ID of link to be executed. */
 		int current_ID = start_stateID;
-		/* Index where machine is currently looking on machine line. */
-		int index = 0;
 		MachineLink link = null;
 		
 		while( current_ID != exit_stateID ) {
@@ -402,11 +421,16 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 //			           link.getCmd().charAt(2) + "_" +
 //			           machineString.substring(index+1, machineString.length()));
 			//System.out.println(machineString);
-			machineLineField.setText(machineString);
-			machineLineField.validate();
+//			machineLineField.setText(machineString);
+//			machineLineField.validate();
 			
 			System.out.println(machineString);
+			
+			setLinkColor(Color.RED, link);
+			setStateColor(Color.RED, link.getStartID());
 			pause(delay);
+			setLinkColor(Color.BLACK, link);
+			setStateColor(Color.BLACK, link.getStartID());
 		}
 		
 		
@@ -416,6 +440,25 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
+	private void setStateColor(Color color, int current_ID) {
+		Iterator<MachineState> it = machineStateList.iterator();
+		while( it.hasNext() ) {
+			MachineState state = it.next();
+			if( state.getID() == current_ID ) {
+				state.getGCompound().setColor( color );
+				return;
+			}
+		}
+	
+	}
+	
+	private void setLinkColor(Color color, MachineLink link) {
+		Iterator<GLine> lines = link.getLines();
+		while( lines.hasNext() ) {
+			lines.next().setColor(color);
+		}
+		
+	}
 	private int updateMachineIndex(int index, char dir) {
 		if( dir == 'L' ) {
 			if(index == 0) machineString = "-" + machineString;
@@ -456,6 +499,10 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		machineString = machineString.substring(0, index) + 
 		                link.getCmd().charAt(2) +
 		                machineString.substring(index+1, machineString.length());
+		
+		machineLineLeft.setText( machineString.substring(0, index) );
+		machineLineCurrent.setText( machineString.substring(index, index+1) );
+		machineLineRight.setText( machineString.substring(index+1, machineString.length()) );
 	}
 	/***************************************************************************
 	 * 
@@ -500,7 +547,12 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	/* User enters starting characters on the line.
 	 * Machine updates them. */
-	JTextField machineLineField;
+	//JTextField machineLineField;
+	JTextField machineLineLeft;
+	// TODO let user enter only one
+	JTextField machineLineCurrent;
+	JTextField machineLineRight;
+	JButton start_button;
 	Boolean running = false;
 	String machineString;
 	

@@ -9,12 +9,11 @@ import java.util.Iterator;
 import javax.swing.*;
 
 @SuppressWarnings("serial")
-/* TODO:    Add dot and arrow to link lines. 
+/* BUG:     Something strange with machine line on top
+ * 
+ * TODO:    Add dot and arrow to link lines. 
  *          Add error check to link definition/text/cmd field.
- *          Change color of MachineState and Link which are being executed.
- *          Allow for start point to be else where, not only on index 0
- *          Allow time interval change in runProgram
- *          Allow skip to end.
+ *          
  *          
  *          
  *          
@@ -26,69 +25,120 @@ import javax.swing.*;
  *          
  *          
  *          Add files support. Probably use xml.
- *          Add start/stop button.
- *          Add time step adjust (delay).
  *          Make link lines join circle of MachineState, don't let them inside.
  *          Maybe add grid for drawing lines.
  *          What when link only has 2 points. GLable is set on second point.
+ *          
+ *          Add multiple end states?
+ *          
  *          */
-public class TuringMachine extends GraphicsProgram implements ProjectConstants{
+public class TuringMachine extends GraphicsProgram implements ProjectConstants, Runnable{
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: Program initialization
+	 * 
+	 * Description: \
+	 * 
+	 * Note: Program is all event driven 
+	 *       except init() so run stays here.
+	 *              
+	 * 
+	 **************************************************************************/
+	
+	
 	
 	public static void main(String[] args) {
 		new TuringMachine().start();
 	}
+	
+	
+	
 	public void init() {
+		
 		
 		setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
 		
 		
-		add_button = new JButton("Add State.");
-		removeAll = new JButton("Remove all");
-		start_button = new JButton("Start");
 		
-		add_machineStateLink_JTF = new JTextField("Add connection", 10);
+		add_button = new JButton("Add State.");
+		removeAll_button = new JButton("Remove all");
+		start_button = new JButton("START");
+		pause_button = new JButton("Pause");
+		goToEnd_button= new JButton("Finish");
+		nextStep_button = new JButton("Next step");
+		
+		add_machineStateLink_JTF = new JTextField("a,b,R", 10);
 		add_machineStateLink_JTF.addActionListener(this);
 		
+		increment_input_JTF = new JTextField(4);
+		increment_input_JTF.addActionListener(this);
 		
-		//machineLineField = new JTextField("----------", 80);
-		//machineLineField.addActionListener(this);
-		machineString = "----------";
-
-		
-		
-		//add( machineLineField, NORTH);
-
-		add(add_button, SOUTH);
-		add(removeAll, SOUTH);
-		add(add_machineStateLink_JTF, SOUTH);
-		add( start_button, SOUTH );
-		
-
 		machineLineLeft = new JTextField("", 40);
 		machineLineLeft.setHorizontalAlignment(SwingConstants.RIGHT);
 		machineLineCurrent = new JTextField("", 1);
 		machineLineRight = new JTextField("", 40);
+		
+		
+
+		add( add_button, SOUTH);
+		add( removeAll_button, SOUTH);
+		add( start_button, SOUTH );
+		add( pause_button, SOUTH );
+		add( goToEnd_button, SOUTH );
+		add( nextStep_button, SOUTH );
+		
+		add( add_machineStateLink_JTF, SOUTH);
+		
+		add( new JLabel("Time step:"), SOUTH);
+		add( increment_input_JTF, SOUTH);
+		add( new JLabel("ms"), SOUTH);
+		
 		add( machineLineLeft, NORTH);
 		add( machineLineCurrent, NORTH);
 		add( machineLineRight, NORTH);
 		
 		
 		
+		setRunning( false );
+		
+		
+		
+		
+		/* Limit JTF for current character to be 1 long. */
+		machineLineCurrent.addKeyListener(new KeyAdapter() {
+		    public void keyTyped(KeyEvent e) { 
+		        if (machineLineCurrent.getText().length() >= 1 )
+		            e.consume(); 
+		    }  
+		});
+		
+		
+		
+		
 		addMouseListeners();
 		addActionListeners();
+		
+		
+		
+		machineString = "";
+		
+		
 		
 		machineStateList = new ArrayList<MachineState>();
 		machineStateLinkList = new ArrayList<MachineLink>();
 		
+		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	
@@ -98,10 +148,39 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
+	/***************************************************************************
+	 * 
+	 * Section: END Program initialization
+	 * 
+	 **************************************************************************/
 	
 	
 	
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: Interrupt functions
+	 * 
+	 * Description: \
+	 *              
+	 * 
+	 **************************************************************************/
 	
 	
 	
@@ -123,89 +202,136 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	public void mouseMoved(MouseEvent e) {
 		
 		/* Machine state follows the mouse movement. */
 		if( add_state_f ) {
-			add_state.getGCompound().setLocation(e.getX() - 
-					       add_state.getGCompound().getWidth()/2, 
-					       e.getY() - add_state.getGCompound().getHeight()/2);
+			add_state.getGCompound().setLocation(e.getX() - add_state.getGCompound().getWidth()/2, 
+					                             e.getY() - add_state.getGCompound().getHeight()/2);
 		}
+		
 		
 		/* Last link line follows the mouse. */
 		if( add_link != null ) {
+			add_link.moveLabel();	// Only sets label to second place where mouse clicked.
+
 			GLine line = add_link.getLastLine();
-			// Only sets label to second place where mouse clicked.
-			add_link.moveLabel();
-			if( line != null ) {
-				line.setEndPoint(e.getX(), e.getY());
-			}
+			if( line != null ) line.setEndPoint(e.getX(), e.getY());
 		}
 	}
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
 	public void actionPerformed(ActionEvent e) {
 		
-		/* Disable buttons and text fields while machine is running.
-		 * So user doesn't add extra states in mean time. */
-		if( running ) return;
+		if( nextStep_button == e.getSource() ) nextStep_b = true;
+		
+		if( pause_button == e.getSource() && running ) pause_Button();
+		
+		/* Starts/Stops executing program drawn on screen. */
+		if( start_button == e.getSource() ) 
+			setRunning( !running && start_button.getActionCommand().equals("START"));
+		
+		
+		if( goToEnd_button == e.getSource() ) delay = 0;
+		
+		if( increment_input_JTF == e.getSource() ) incrementInput();
+		
 		
 		/*	Initializes new MachineState object that is to be added on screen.	*/
-		if( add_button == e.getSource() && !add_state_f ) {
-			add_state_f = true;
-			add_state = new MachineState();
-			exit_stateID = add_state.getID();
-			add(add_state.getGCompound(), 0, 0);
-			machineStateList.add(add_state);
-		}
+		if( add_button == e.getSource() && !add_state_f ) add_button_pressed();
 		
 		/*	Initializes new MachineLink object that is to be added on screen.	*/
 		if( add_machineStateLink_JTF == e.getSource() && add_link == null ) {
 			add_link = new MachineLink( add_machineStateLink_JTF.getText() );
 		}
 		
-		/* Starts executing program drawn on screen. */
-		if( start_button == e.getSource() ) {
-			running = true;
-			
-			
-			machineString = machineLineLeft.getText() + 
-					        machineLineCurrent.getText() +
-					        machineLineRight.getText();
-			
-			new Thread(() -> {
-			    runProgram( machineLineLeft.getText().length() );
-			}).start();
-		}
+		
 		
 		/* Remove all objects from screen. */
-		if( removeAll == e.getSource() ) {
+		if( removeAll_button == e.getSource() ) removeAll_button_pressed();
+	}
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: END Interrupt functions
+	 * 
+	 **************************************************************************/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: Button interaction functions
+	 * 
+	 * Description: \
+	 *              
+	 * 
+	 **************************************************************************/
+	
+
+	
+	private void pause_Button() {
+		
+		if( runProgram_paused ) {
+			runProgram_paused = false;
+			pause_button.setText("Pause");
+		} else {
+			runProgram_paused = true;
+			pause_button.setText("Resume");
+		}
+	}
+	
+	
+	
+	private void incrementInput() {
+		String str = increment_input_JTF.getText();
+		for(int i = 0; i < str.length(); i++ ) {
+			if( str.charAt(i) < '0' || str.charAt(i) > '9' ) {
+				increment_input_JTF.setText("\\");
+				return;
+			}
+		}
+		delay = 0;
+		for(int i = 0; i < str.length(); i++ ) {
+			delay *= 10;
+			delay += str.charAt(i)-'0';
+		}
+		System.out.println(delay);
+	}
+	
+	
+	
+	private void add_button_pressed() {
+			add_state_f = true;
+			add_state = new MachineState();
+			exit_stateID = add_state.getID();
+			add(add_state.getGCompound(), 0, 0);
+			machineStateList.add(add_state);
+	}
+	
+	
+	
+	private void removeAll_button_pressed() {
 			Iterator<MachineState> it = machineStateList.iterator();
 			while(it.hasNext()) {
 				remove( it.next().getGCompound() );
@@ -222,8 +348,64 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 			}
 			
 			start_stateID = exit_stateID + 1;
-		}
 	}
+	
+	
+	
+	/* If true changes Start to stop and other way around. */
+	private void setRunning(boolean b) {
+		
+		running = b;
+		
+		/* Machine running interaction. */
+		pause_button.setEnabled(b);
+		goToEnd_button.setEnabled(b);
+		nextStep_button.setEnabled(b);
+		
+		/* Machine is being edited if b is false. */
+		add_button.setEnabled(!b);
+		add_button.setEnabled(!b);
+		add_machineStateLink_JTF.setEnabled(!b);
+		removeAll_button.setEnabled(!b);
+		
+		
+		if(b) {
+			start_button.setText("Stop");
+			
+			current_stateID = start_stateID;
+			
+			machineString = machineLineLeft.getText() + 
+					        machineLineCurrent.getText() +
+					        machineLineRight.getText();
+			
+			
+			T_thread = new Thread()   {
+				public void run() {
+					runProgram( machineLineLeft.getText().length() );
+				}
+			};
+			T_thread.start();
+			
+		}else {
+			start_button.setText("START");
+			while( T_thread != null && T_thread.isAlive() ) ;
+			T_thread = null;
+		}
+		
+	}
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: END Button interaction functions
+	 * 
+	 **************************************************************************/
+	
+	
+	
+	
+	
 	
 	
 	
@@ -247,13 +429,6 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	 *              
 	 * 
 	 **************************************************************************/
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	
@@ -311,57 +486,6 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
-//	private void drawLines() {
-//		Iterator<MachineLink> it = machineStateLinkList.iterator();
-//		while(it.hasNext()) {
-//			
-//			MachineLink link = it.next();
-//			Iterator<GLine> lines = link.getLines();
-//			if( lines.hasNext() ) {
-//				GLine line = lines.next();
-//				add(line);
-//				add(new GLabel(link.getCmd()), line.getEndPoint());
-//			}
-//			while( lines.hasNext() ) {
-//				add( lines.next() );
-//			}
-//		}
-////		Iterator<MachineLink> it = machineStateLinkList.iterator();
-////		
-////		while( it.hasNext() ) {
-////			MachineLink current_stateLink = it.next();
-////			Iterator<GPoint> points_it = current_stateLink.getPoints();
-////			GPoint current = null;
-////			double sX, sY, eX, eY;
-////			if( points_it.hasNext() ) current = points_it.next();
-////			
-////			Boolean secondPoint_f = true; /*	At second point add GLable to mark connection.	*/
-////			while( points_it.hasNext() ) {
-////				
-////				sX = current.getX();
-////				sY = current.getY();
-////				current = points_it.next();
-////				eX = current.getX();
-////				eY = current.getY();
-////				if( secondPoint_f ) {
-////					add(new GLabel( current_stateLink.getCmd()), eX, eY);
-////					secondPoint_f = false;
-////				}
-////				add(new GLine(sX, sY, eX, eY));
-////			}
-////		}
-//		
-//	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/***************************************************************************
 	 * 
 	 * Section: End Drawing functions
@@ -397,40 +521,54 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	 * 
 	 **************************************************************************/
 	
-
-	/* Index where machine is currently looking on machine line. */
+	
+	
 	private void runProgram( int index) {
+
+		running = true;
 		
 		/* Tracks what is current state
 		 * That is starting ID of link to be executed. */
-		int current_ID = start_stateID;
 		MachineLink link = null;
 		
-		while( current_ID != exit_stateID ) {
+		while( current_stateID != exit_stateID ) {
 			
-			link = findCurrentLink(index, current_ID);
+			link = findCurrentLink(index, current_stateID);
 			/* TODO Maybe add fancy error for link not found. */
-			if( link == null ) break; 
+			if( link == null ) {
+				System.out.println("DEBUG");
+				break;
+				
+			}
 			
-			updateMachineLine(index, link);
-			index = updateMachineIndex(index, link.getDir());
 			
-			current_ID = link.getEndID();
-//			System.out.println("DEBUG___\\__dir: " + link.getDir() + "__\\" + 
-//			           machineString.substring(0, index) + "_" +
-//			           link.getCmd().charAt(2) + "_" +
-//			           machineString.substring(index+1, machineString.length()));
-			//System.out.println(machineString);
-//			machineLineField.setText(machineString);
-//			machineLineField.validate();
+			current_stateID = link.getEndID();
 			
-			System.out.println(machineString);
 			
+			/* Highlight current step. */
 			setLinkColor(Color.RED, link);
 			setStateColor(Color.RED, link.getStartID());
-			pause(delay);
+			
+			
+			
+			if( delay != 0 ) pause(delay);
+			else while( !nextStep_b ) pause(10);
+			nextStep_b = false;
+			
+			
+			updateMachineString(index, link);
+			updateMachineLine(index);
+			index = updateMachineIndex(index, link.getDir());
+			
 			setLinkColor(Color.BLACK, link);
 			setStateColor(Color.BLACK, link.getStartID());
+			
+			
+			/* Hang until resumed. */
+			while( runProgram_paused && running ) pause(10);
+			if( !running ) break;
+			
+			
 		}
 		
 		
@@ -440,11 +578,12 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
-	private void setStateColor(Color color, int current_ID) {
+	/* Sets color for current MachineState. */
+	private void setStateColor(Color color, int current_stateID) {
 		Iterator<MachineState> it = machineStateList.iterator();
 		while( it.hasNext() ) {
 			MachineState state = it.next();
-			if( state.getID() == current_ID ) {
+			if( state.getID() == current_stateID ) {
 				state.getGCompound().setColor( color );
 				return;
 			}
@@ -452,6 +591,12 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	}
 	
+	
+	
+	
+	
+	
+	/* Sets color for current MachineLink. */
 	private void setLinkColor(Color color, MachineLink link) {
 		Iterator<GLine> lines = link.getLines();
 		while( lines.hasNext() ) {
@@ -459,6 +604,10 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		}
 		
 	}
+	
+	
+	
+	/* */
 	private int updateMachineIndex(int index, char dir) {
 		if( dir == 'L' ) {
 			if(index == 0) machineString = "-" + machineString;
@@ -473,6 +622,12 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 		}
 		return index;
 	}
+	
+	
+	
+	
+	
+	
 	
 	
 	
@@ -494,16 +649,25 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
-	private void updateMachineLine(int index, MachineLink link) {
+	private void updateMachineLine(int index) {
 		
-		machineString = machineString.substring(0, index) + 
-		                link.getCmd().charAt(2) +
-		                machineString.substring(index+1, machineString.length());
 		
 		machineLineLeft.setText( machineString.substring(0, index) );
 		machineLineCurrent.setText( machineString.substring(index, index+1) );
 		machineLineRight.setText( machineString.substring(index+1, machineString.length()) );
 	}
+	
+	
+	
+	private void updateMachineString(int index, MachineLink link) {
+
+		machineString = machineString.substring(0, index) + 
+		                link.getCmd().charAt(2) +
+		                machineString.substring(index+1, machineString.length());
+	}
+	
+	
+	
 	/***************************************************************************
 	 * 
 	 * Section: End Run Machine
@@ -526,13 +690,24 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	
 	
 	
+	/***************************************************************************
+	 * 
+	 * Section: Instance variables
+	 * 
+	 * Description: /
+	 * 
+	 **************************************************************************/
+	
 	
 	
 	/*	When machine reaches state with this ID it stops running.	*/
 	int exit_stateID = 0;
 	int start_stateID = 0;
+	int current_stateID;
 	int delay = 1000; // Pause between switching states.
-
+	
+	
+	
 	/* Defines "Add state" button and list of MachineState
 	 * True until user clicks and places machine state. */
 	Boolean add_state_f = false;
@@ -540,22 +715,53 @@ public class TuringMachine extends GraphicsProgram implements ProjectConstants{
 	MachineState add_state;
 	ArrayList<MachineState> machineStateList;
 	
+	
+	
 	/* Defines text field for MachineLink and list of them.	*/
 	JTextField add_machineStateLink_JTF;
 	MachineLink add_link;
 	ArrayList<MachineLink> machineStateLinkList;
 	
-	/* User enters starting characters on the line.
-	 * Machine updates them. */
-	//JTextField machineLineField;
+	
+	
+	/* Input for machine */
 	JTextField machineLineLeft;
-	// TODO let user enter only one
 	JTextField machineLineCurrent;
 	JTextField machineLineRight;
-	JButton start_button;
+	
+	
+	
+	/* Disables adding new states and links. */
 	Boolean running = false;
+	Boolean runProgram_paused = false;
+	
+	
+	
+	/* Tracks machine input. */
 	String machineString;
 	
-	JButton removeAll;
+	
+	
+	/* For GUI. */
+	JButton removeAll_button;
+	JButton start_button;
+	JButton pause_button;
+	JButton goToEnd_button;
+	JButton nextStep_button;
+	JTextField increment_input_JTF;
+	
+	
+	
+	boolean nextStep_b;
+	
+	Thread T_thread;
+	
+	
+	
+	/***************************************************************************
+	 * 
+	 * Section: END Instance variables
+	 * 
+	 **************************************************************************/
 	
 }

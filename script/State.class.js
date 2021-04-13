@@ -12,4 +12,13 @@ class State {
         this.label = 'new Machine State';
     }
 
+
+
+    draw(){
+        
+        Canvas.context.beginPath();
+        Canvas.context.arc(this.centerX, this.centerY, State.radius, State.startAngel, State.endAngle);
+        Canvas.context.stroke();
+    }
+
 }

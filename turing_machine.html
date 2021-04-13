@@ -21,10 +21,22 @@
             height: 100vh;
             width: 100vw;
         }
+
+        #controlButtons {
+            position: fixed;
+            bottom: 0;
+            width: 100vw;
+
+            display: flex;
+            flex-direction: row;
+        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <section id="controlButtons">
+        <button class="controll" id="addState">Add state</button>
+    </section>
 </body>
 
 <script src='script/State.class.js'></script>

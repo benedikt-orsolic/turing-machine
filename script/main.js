@@ -1,4 +1,5 @@
 const stateList = Array();
+var control = '';
 windowResizeEvent();
 animate();
 
@@ -6,9 +7,15 @@ animate();
 
 document.getElementById('canvas').addEventListener('click', function(event){
     
-    stateList.push(new State(event.clientX, event.clientY));
+    if(control == 'addState') {
+        ist.push(new State(event.clientX, event.clientY));
+        control = '';
+    }
     
 });
+
+document.getElementById('addState').addEventListener('click', function(){ control = 'addState'; });
+
 window.addEventListener('resize', windowResizeEvent);
 
 

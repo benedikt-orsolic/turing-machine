@@ -1,48 +1,49 @@
 const stateList = Array();
 var control = '';
-var buildingLink = undefined;
 windowResizeEvent();
 animate();
 
 
 
-document.getElementById('canvas').addEventListener('click', function(event){
-    
+function mouseClicked(event) {
     if(control == 'addState') {
         stateList.push(new State(event.clientX, event.clientY));
         control = '';
     }
     if(control == 'addLink') {
-        let selectedState = getSelected(event);
-        //console.log(selectedState)
+        mouseClickedForAddLInk(event);
+    }
+}
 
-        if(buildingLink == undefined && selectedState != null) {
-            buildingLink = new MachineLink(selectedState);
-            selectedState.addLink(buildingLink);
-            return;
-        }
 
-        if(buildingLink.end == null && selectedState != null) {
-            buildingLink.addEndState(selectedState);
-        } else {
-            buildingLink.addPoint(event.clientX, event.clientY);
-            return;
-        }
-        control = '';
+
+function mouseClickedForAddLInk(event){
+
+    
+    
+
+    let selectedState = getSelectedState(event);
+
+    if(mouseClickedForAddLInk.buildingLink == undefined && selectedState != null) {
+        mouseClickedForAddLInk.buildingLink = new MachineLink(selectedState);
+        selectedState.addLink(mouseClickedForAddLInk.buildingLink);
+        return;
     }
 
-    console.log(buildingLink);
+    if(mouseClickedForAddLInk.buildingLink.end == null && selectedState != null) {
+        mouseClickedForAddLInk.buildingLink.addEndState(selectedState);
+    } else {
+        mouseClickedForAddLInk.buildingLink.addPoint(event.clientX, event.clientY);
+        return;
+    }
     
-});
-
-document.getElementById('addState').addEventListener('click', function(){ control = 'addState'; });
-document.getElementById('addLink').addEventListener('click', function(){ control = 'addLink'; });
-
-window.addEventListener('resize', windowResizeEvent);
+    mouseClickedForAddLInk.buildingLink = undefined;
+    control = '';
+}
 
 
 
-function getSelected(event) {
+function getSelectedState(event) {
 
     let x = event.clientX;
     let y = event.clientY;

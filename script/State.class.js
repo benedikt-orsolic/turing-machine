@@ -3,6 +3,7 @@ class State {
     static radius = 15;
     static startAngel = 0;
     static endAngle = 2*Math.PI;
+    static id = 0;
 
 
     constructor (centerX, centerY) {
@@ -10,6 +11,7 @@ class State {
         this.centerX = centerX;
         this.centerY = centerY;
         this.label = 'new Machine State';
+        this.id = State.id++;
     }
 
 
@@ -19,6 +21,10 @@ class State {
         Canvas.context.beginPath();
         Canvas.context.arc(this.centerX, this.centerY, State.radius, State.startAngel, State.endAngle);
         Canvas.context.stroke();
+
+        this.machineLinks.forEach(function(link){
+            link.draw();
+        });
     }
 
     addLink(link) {

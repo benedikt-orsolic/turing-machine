@@ -1,9 +1,6 @@
 const stateList = Array();
 var control = '';
-var buildingLink = {
-    start: null,
-    end: null
-};
+var buildingLink = undefined;
 windowResizeEvent();
 animate();
 
@@ -18,22 +15,22 @@ document.getElementById('canvas').addEventListener('click', function(event){
     if(control == 'addLink') {
         let selectedState = getSelected(event);
         //console.log(selectedState)
-        if(selectedState == null) return;
 
-        if(buildingLink.start == null) {
-            buildingLink.start = selectedState;
+        if(buildingLink == undefined && selectedState != null) {
+            buildingLink = new MachineLink(selectedState);
             return;
         }
 
-        if(buildingLink.end == null) {
-            buildingLink.end = selectedState;
+        if(buildingLink.end == null && selectedState != null) {
+            buildingLink.addEndState(selectedState);
+        } else {
+            buildingLink.addPoint(event.clientX, event.clientY);
+            return;
         }
-
-        buildingLink.start.addLink(buildingLink.end);
         control = '';
     }
 
-    console.log(stateList)
+    console.log(buildingLink);
     
 });
 

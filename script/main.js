@@ -18,6 +18,7 @@ document.getElementById('canvas').addEventListener('click', function(event){
 
         if(buildingLink == undefined && selectedState != null) {
             buildingLink = new MachineLink(selectedState);
+            selectedState.addLink(buildingLink);
             return;
         }
 
@@ -65,7 +66,7 @@ function animate() {
         state.draw();
     });
 
-    
+
     requestAnimationFrame(animate);
 }
 

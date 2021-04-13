@@ -25,4 +25,12 @@ class State {
         this.machineLinks.push(link);
     }
 
+    getX() {
+        return this.centerX;
+    }
+
+    getY() {
+        return this.centerY;
+    }
+
 }

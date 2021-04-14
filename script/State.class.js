@@ -31,6 +31,17 @@ class State {
         this.machineLinks.push(link);
     }
 
+    getActivatedLink(currentCharInCell) {
+
+        for(let i=0; i < this.machineLinks.length; i++) {
+            let link = this.machineLinks[i];
+
+            if( link.getCommand().getWantInCell() == currentCharInCell) return link;
+        }
+        
+        return null;
+    }
+
     getX() {
         return this.centerX;
     }

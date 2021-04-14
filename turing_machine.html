@@ -37,10 +37,22 @@
             flex-direction: row;
         }
 
-        
+        .linkCommandInput {
+            width: 1em;
+        }
 
-        input[type="text"] {
-            width: 3em;
+        #machineTape{
+            display: flex;
+            flex-direction: row;
+
+        }
+
+        .sides {
+            flex-grow: 1;
+        }
+
+        .currentCell {
+            width: 1em;
         }
     </style>
 </head>
@@ -52,9 +64,9 @@
             <button class="controll" id="addLink">Add link</button>
 
             <label for="wantInCell">If this is in cell</label>
-            <input id="wantInCell" type="text" value="a">
+            <input id="wantInCell" class="linkCommandInput" type="text" value="a">
             <label for="putInCell"> put this into cell </label>
-            <input id="putInCell" type="text" value="a">
+            <input id="putInCell" class="linkCommandInput"  type="text" value="a">
 
             <input type="radio" id="directionLeft" name="direction">
             <label for="directionLeft">Left</label>
@@ -66,7 +78,11 @@
             <label for="directionRight">Right</label>
 
         </section>
-        <section id="machineTape"></section>
+        <section id="machineTape">
+            <input id="machineTapeLeft" class="sides" type="text">
+            <input id="machineTapeCurrentCell" class="currentCell" type="text">
+            <input id="machineTapeRight" class="sides" type="text">
+        </section>
     </section>
 </body>
 

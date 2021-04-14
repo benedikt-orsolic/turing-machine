@@ -5,7 +5,8 @@ animate();
 
 
 
-function mouseClicked(event) {
+function mouseClickedOnCanvas(event) {
+          
     if(control == 'addState') {
         machine.addState(new State(event.clientX, event.clientY));
         control = '';

@@ -3,8 +3,10 @@ class Machine{
     machineTapeStrLeft = '';
     machineTapeStrRight = '';
     currentTapeCell = 'a';
+    currentState = undefined;
 
     addState(newState) {
+        if(this.currentState == undefined) this.currentState = newState;
         this.stateList.push(newState);
     }
 

@@ -1,9 +1,11 @@
 class MachineLink {
 
-    constructor(startState) {
+    constructor(startState, command) {
         this.startState = startState;
         this.pointList = Array();
         this.pointList.push({x: startState.getX(), y: startState.getY()});
+
+        this.command = command;
     }
 
     addEndState(endState){

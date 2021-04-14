@@ -1,4 +1,4 @@
-const stateList = Array();
+const machine = new Machine();
 var control = '';
 windowResizeEvent();
 animate();
@@ -7,7 +7,7 @@ animate();
 
 function mouseClicked(event) {
     if(control == 'addState') {
-        stateList.push(new State(event.clientX, event.clientY));
+        machine.addState(new State(event.clientX, event.clientY));
         control = '';
     }
     if(control == 'addLink') {
@@ -19,10 +19,7 @@ function mouseClicked(event) {
 
 function mouseClickedForAddLInk(event){
 
-    
-    
-
-    let selectedState = getSelectedState(event);
+    let selectedState = machine.getSelectedState(event.clientX, event.clientY);
 
     if(mouseClickedForAddLInk.buildingLink == undefined && selectedState != null) {
         mouseClickedForAddLInk.buildingLink = new MachineLink(selectedState, new LinkCommand());
@@ -43,31 +40,13 @@ function mouseClickedForAddLInk(event){
 
 
 
-function getSelectedState(event) {
 
-    let x = event.clientX;
-    let y = event.clientY;
-
-    for(let i = 0; i < stateList.length; i++){
-
-        state = stateList[i];
-
-        if( Math.abs(state.getY() - y) <= State.radius &&
-            Math.abs(state.getX() - x) <= State.radius) {
-            return state;
-        }
-    }
-}
 
 
 
 function animate() {
 
-    stateList.forEach(function(state){
-        state.draw();
-    });
-
-
+    machine.draw();
     requestAnimationFrame(animate);
 }
 

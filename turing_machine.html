@@ -22,14 +22,22 @@
             width: 100vw;
         }
 
-        #controlButtons {
+        #machineControls {
+            display: flex;
+            flex-direction: column;
+
             position: fixed;
             bottom: 0;
+        }
+
+        #controlButtons {
             width: 100vw;
 
             display: flex;
             flex-direction: row;
         }
+
+        
 
         input[type="text"] {
             width: 3em;
@@ -38,24 +46,27 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <section id="controlButtons">
-        <button class="controll" id="addState">Add state</button>
-        <button class="controll" id="addLink">Add link</button>
+    <section id="machineControls">
+        <section id="controlButtons">
+            <button class="controll" id="addState">Add state</button>
+            <button class="controll" id="addLink">Add link</button>
 
-        <label for="wantInCell">If this is in cell</label>
-        <input id="wantInCell" type="text" value="a">
-        <label for="putInCell"> put this into cell </label>
-        <input id="putInCell" type="text" value="a">
+            <label for="wantInCell">If this is in cell</label>
+            <input id="wantInCell" type="text" value="a">
+            <label for="putInCell"> put this into cell </label>
+            <input id="putInCell" type="text" value="a">
 
-        <input type="radio" id="directionLeft" name="direction">
-        <label for="directionLeft">Left</label>
+            <input type="radio" id="directionLeft" name="direction">
+            <label for="directionLeft">Left</label>
 
-        <input type="radio" checked="true" id="directionStay" name="direction">
-        <label for="directionStay">Stay</label>
+            <input type="radio" checked="true" id="directionStay" name="direction">
+            <label for="directionStay">Stay</label>
 
-        <input type="radio" id="directionRight" name="direction">
-        <label for="directionRight">Right</label>
+            <input type="radio" id="directionRight" name="direction">
+            <label for="directionRight">Right</label>
 
+        </section>
+        <section id="machineTape"></section>
     </section>
 </body>
 

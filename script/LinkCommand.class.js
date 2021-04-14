@@ -13,4 +13,10 @@ class LinkCommand {
         
         this.direction = 'S';
     }
+
+
+
+    getWantInCell() { return this.wantInCell; }
+    getPutInCell() { return this.putInCell; }
+    getDirection() { return this.direction; }
 }

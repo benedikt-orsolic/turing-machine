@@ -8,6 +8,9 @@ class MachineLink {
         this.command = command;
     }
 
+    getEndState() { return this.endState; }
+    getCommand() { return this.command; }
+
     addEndState(endState){
         this.endState = endState;
         this.pointList.push({x: endState.getX(), y: endState.getY()});

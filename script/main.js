@@ -25,7 +25,7 @@ function mouseClickedForAddLInk(event){
     let selectedState = getSelectedState(event);
 
     if(mouseClickedForAddLInk.buildingLink == undefined && selectedState != null) {
-        mouseClickedForAddLInk.buildingLink = new MachineLink(selectedState);
+        mouseClickedForAddLInk.buildingLink = new MachineLink(selectedState, new LinkCommand());
         selectedState.addLink(mouseClickedForAddLInk.buildingLink);
         return;
     }

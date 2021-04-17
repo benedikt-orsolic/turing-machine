@@ -20,6 +20,8 @@ class State {
 
         Canvas.context.beginPath();
         Canvas.context.arc(this.centerX, this.centerY, State.radius, State.startAngel, State.endAngle);
+
+        Canvas.context.strokeStyle = '#000000';
         Canvas.context.stroke();
 
         this.machineLinks.forEach(function(link){

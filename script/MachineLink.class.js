@@ -28,5 +28,11 @@ class MachineLink {
         }
         
         Canvas.context.stroke();
+
+        if(this.pointList.length >= 2){
+            Canvas.context.font = "30px Arial";
+            Canvas.context.strokeText(this.command.getWantInCell() + '/' + this.command.getPutInCell() + ' ' + this.command.getDirection(),
+                                      this.pointList[1].x, this.pointList[1].y);
+        } 
     }
 }

@@ -21,14 +21,45 @@ class MachineLink {
     }
 
     draw() {
+        
+        this.drawExceptLastLine();
+        this.drawLastLine();
+        this.drawLinkLabel();
+        
+    }
+
+    drawExceptLastLine() {
+
         Canvas.context.beginPath();
+        Canvas.context.strokeStyle = '#000000';
+
         Canvas.context.moveTo(this.pointList.x, this.pointList.y);
-        for(let i = 0; i < this.pointList.length; i++) {
+
+        for(let i = 0; i < this.pointList.length - 1; i++) {
             Canvas.context.lineTo(this.pointList[i].x, this.pointList[i].y);
         }
         
         Canvas.context.stroke();
+    }
 
+    drawLastLine() {
+        if(this.pointList.length < 2 ) return;
+
+        let i = this.pointList.length - 2;
+
+        Canvas.context.beginPath();
+
+
+        Canvas.context.moveTo(this.pointList[i].x, this.pointList[i].y);
+        i++;
+        Canvas.context.lineTo(this.pointList[i].x, this.pointList[i].y);
+        
+
+        Canvas.context.strokeStyle = '#ff0000';
+        Canvas.context.stroke();
+    }
+
+    drawLinkLabel() {
         if(this.pointList.length >= 2){
             Canvas.context.font = "30px Arial";
             Canvas.context.strokeText(this.command.getWantInCell() + '/' + this.command.getPutInCell() + ' ' + this.command.getDirection(),

@@ -6,10 +6,9 @@ animate();
 
 
 function mouseClickedOnCanvas(event) {
-          
+     
     if(control == 'addState') {
-        machine.addState(new State(event.clientX, event.clientY));
-        control = '';
+        mouseClickedForAddState(event);
     }
     if(control == 'addLink') {
         mouseClickedForAddLInk(event);
@@ -23,6 +22,26 @@ function mouseMovedOnCanvas(event) {
     if( mouseClickedForAddLInk.buildingLink !== undefined && control == 'addLink' ) {
         mouseClickedForAddLInk.buildingLink.moveLastPoint(event.clientX, event.clientY);
     }
+
+    
+    if( mouseClickedForAddState.state !== undefined && control == 'addState' ) {
+        mouseClickedForAddState.state.move(event.clientX, event.clientY);
+    }
+
+}
+
+
+
+function mouseClickedForAddState(event) {
+    if( mouseClickedForAddState.state !== undefined ) {
+        mouseClickedForAddState.state = undefined;
+        control = '';
+        return;
+    }
+
+    mouseClickedForAddState.state = new State(event.clientX, event.clientY);
+    machine.addState(mouseClickedForAddState.state);
+
 }
 
 

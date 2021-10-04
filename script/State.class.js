@@ -16,6 +16,14 @@ class State {
 
 
 
+    move(x, y) {
+        if(this.machineLinks[0] !== undefined) return;
+        this.centerX = x;
+        this.centerY = y;
+    }
+
+
+
     draw(){
 
         Canvas.context.beginPath();

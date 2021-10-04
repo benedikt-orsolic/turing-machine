@@ -4,6 +4,7 @@ class MachineLink {
         this.startState = startState;
         this.pointList = Array();
         this.pointList.push({x: startState.getX(), y: startState.getY()});
+        this.pointList.push({x: this.pointList[0].x, y: this.pointList[0].y});
 
         this.command = command;
     }
@@ -14,10 +15,17 @@ class MachineLink {
     addEndState(endState){
         this.endState = endState;
         this.pointList.push({x: endState.getX(), y: endState.getY()});
+        this.movingPoint = undefined;
     }
 
     addPoint(pointX, pointY) {
         this.pointList.push({x: pointX, y: pointY});
+    }
+
+    moveLastPoint(x, y){
+        if(this.endState !== undefined) return;
+        this.pointList[this.pointList.length - 1].x = x;
+        this.pointList[this.pointList.length - 1].y = y;
     }
 
     draw() {

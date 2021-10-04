@@ -18,6 +18,15 @@ function mouseClickedOnCanvas(event) {
 
 
 
+function mouseMovedOnCanvas(event) {
+
+    if( mouseClickedForAddLInk.buildingLink !== undefined && control == 'addLink' ) {
+        mouseClickedForAddLInk.buildingLink.moveLastPoint(event.clientX, event.clientY);
+    }
+}
+
+
+
 function mouseClickedForAddLInk(event){
 
     let selectedState = machine.getSelectedState(event.clientX, event.clientY);
@@ -46,7 +55,9 @@ function mouseClickedForAddLInk(event){
 
 
 function animate() {
-
+    //if(control != ''){
+    Canvas.context.clearRect(0, 0, Canvas.canvas.width, Canvas.canvas.height);
+    //}
     machine.draw();
     requestAnimationFrame(animate);
 }

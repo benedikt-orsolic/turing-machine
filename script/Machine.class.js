@@ -40,7 +40,11 @@ class Machine{
         
 
         this.stateList.forEach(function(state){
-            state.draw();
+            state.drawOwnLinks();
+        });
+
+        this.stateList.forEach(function(state){
+            state.drawSelf();
         });
     }
 

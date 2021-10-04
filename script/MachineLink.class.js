@@ -4,6 +4,7 @@ class MachineLink {
         this.startState = startState;
         this.pointList = Array();
         this.pointList.push({x: startState.getX(), y: startState.getY()});
+        // Last point that will follow mouse
         this.pointList.push({x: this.pointList[0].x, y: this.pointList[0].y});
 
         this.command = command;

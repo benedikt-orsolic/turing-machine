@@ -24,14 +24,16 @@ class State {
 
 
 
-    draw(){
+    drawSelf() {
 
         Canvas.context.beginPath();
         Canvas.context.arc(this.centerX, this.centerY, State.radius, State.startAngel, State.endAngle);
 
         Canvas.context.strokeStyle = '#000000';
-        Canvas.context.stroke();
+        Canvas.context.fill();
+    }
 
+    drawOwnLinks() {
         this.machineLinks.forEach(function(link){
             link.draw();
         });

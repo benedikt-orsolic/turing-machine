@@ -15,6 +15,13 @@ class Machine{
         this.getFromMachineTape();
 
         let activatedLink = this.currentState.getActivatedLink(this.currentTapeCell);
+
+        if( activatedLink === null ) {
+            document.getElementById('machineHalt').innerHTML = 'Machine halt';
+            setTimeout(() => {document.getElementById('machineHalt').innerHTML = '';}, 15000);
+            return;
+        }
+        
         let command = activatedLink.getCommand();
 
         this.currentTapeCell = command.getPutInCell();

@@ -11,6 +11,9 @@ class Machine{
     }
 
     resolveLink() {
+
+        this.getFromMachineTape();
+
         let activatedLink = this.currentState.getActivatedLink(this.currentTapeCell);
         let command = activatedLink.getCommand();
 
@@ -52,6 +55,12 @@ class Machine{
         document.getElementById('machineTapeLeft').value = this.machineTapeStrLeft;
         document.getElementById('machineTapeRight').value = this.machineTapeStrRight;
         document.getElementById('machineTapeCurrentCell').value = this.currentTapeCell;
+    }
+
+    getFromMachineTape() {
+        this.machineTapeStrLeft = document.getElementById('machineTapeLeft').value;
+        this.machineTapeStrRight = document.getElementById('machineTapeRight').value;
+        this.currentTapeCell = document.getElementById('machineTapeCurrentCell').value;
     }
 
     getSelectedState(x, y) {

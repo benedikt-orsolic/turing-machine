@@ -30,7 +30,7 @@ class Machine{
             if(this.machineTapeStrLeft == '') this.machineTapeStrLeft = 'a';
             this.machineTapeStrRight = this.currentTapeCell + this.machineTapeStrRight;
             this.currentTapeCell = this.machineTapeStrLeft.substring(this.machineTapeStrLeft.length - 1, this.machineTapeStrLeft.length);
-            this.machineTapeStrLeft = this.machineTapeStrLeft.substring(this.machineTapeStrLeft.length - 1);
+            this.machineTapeStrLeft = this.machineTapeStrLeft.substring(0, this.machineTapeStrLeft.length - 1);
         }
 
         if(command.getDirection() == 'R'){
@@ -38,7 +38,7 @@ class Machine{
             if(this.machineTapeStrRight == '') this.machineTapeStrRight = 'a';
             this.machineTapeStrLeft = this.machineTapeStrLeft + this.currentTapeCell;
             this.currentTapeCell = this.machineTapeStrRight.substring(0, 1);
-            this.machineTapeStrRight = this.machineTapeStrRight.substring(1, this.machineTapeStrLeft.length);
+            this.machineTapeStrRight = this.machineTapeStrRight.substring(1, this.machineTapeStrRight.length);
         }
 
         this.currentState = activatedLink.getEndState();
